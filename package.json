@@ -1,0 +1,44 @@
+{
+  "name": "@oke3/opencode-codeforge",
+  "version": "0.1.0",
+  "description": "Analytics for OpenCode usage — costs, models, agents, projects, daily trends",
+  "type": "module",
+  "bin": {
+    "codeforge": "./dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "test": "bun test",
+    "prepublishOnly": "bun run build && bun test"
+  },
+  "keywords": [
+    "opencode",
+    "analytics",
+    "cost",
+    "tokens",
+    "models",
+    "reporting",
+    "cli"
+  ],
+  "engines": {
+    "node": ">=22.5"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.6.0"
+  },
+  "author": "oke3",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/oke3/opencode-codeforge.git"
+  },
+  "bugs": {
+    "url": "https://github.com/oke3/opencode-codeforge/issues"
+  },
+  "homepage": "https://github.com/oke3/opencode-codeforge#readme"
+}
