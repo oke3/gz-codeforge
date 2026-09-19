@@ -1,10 +1,12 @@
-# opencode-codeforge
+# gz-codeforge
+
+> Built by [Ground Zero LLC](https://github.com/oke3) — AI infrastructure for the agentic age.
 
 Analytics for OpenCode usage — costs, models, agents, projects, and daily trends.
 
-[![CI](https://github.com/oke3/opencode-codeforge/actions/workflows/ci.yml/badge.svg)](https://github.com/oke3/opencode-codeforge/actions)
-[![npm](https://img.shields.io/npm/v/@oke3/opencode-codeforge)](https://www.npmjs.com/package/@oke3/opencode-codeforge)
-[![license](https://img.shields.io/npm/l/@oke3/opencode-codeforge)](https://github.com/oke3/opencode-codeforge/blob/main/LICENSE)
+[![CI](https://github.com/oke3/gz-codeforge/actions/workflows/ci.yml/badge.svg)](https://github.com/oke3/gz-codeforge/actions)
+[![npm](https://img.shields.io/npm/v/@ground-zero-llc/gz-codeforge)](https://www.npmjs.com/package/@ground-zero-llc/gz-codeforge)
+[![license](https://img.shields.io/npm/l/@ground-zero-llc/gz-codeforge)](https://github.com/oke3/gz-codeforge/blob/main/LICENSE)
 
 ## Why
 
@@ -20,7 +22,7 @@ Read-only, local-first, zero dependencies.
 ## Install
 
 ```bash
-npm install -g @oke3/opencode-codeforge
+npm install -g @ground-zero-llc/gz-codeforge
 ```
 
 Requires Node 22.5+ (uses `node:sqlite`; falls back to `bun:sqlite` under Bun).
@@ -69,7 +71,7 @@ OpenCode stores the model field as JSON in newer databases (`{"id":"deepseek-v4-
 ## Library API
 
 ```typescript
-import { Analytics } from '@oke3/opencode-codeforge'
+import { Analytics } from '@ground-zero-llc/gz-codeforge'
 
 const analytics = new Analytics('~/.local/share/opencode/opencode.db')
 const overview = analytics.overview()
@@ -89,15 +91,15 @@ The database is opened **read-only** — codeforge never writes to it.
 
 ## Related Projects
 
-- [opencode-sessions](https://github.com/oke3/opencode-sessions) — Persistent cross-session memory for OpenCode agents
-- [opencode-codemap](https://github.com/oke3/opencode-codemap) — Codebase mapping for OpenCode
-- [opencode-bench](https://github.com/oke3/opencode-bench) — Benchmarking suite for OpenCode
-- [opencode-remote](https://github.com/oke3/opencode-remote) — Drive OpenCode over SSH
-- [opencode-modelrouter](https://github.com/oke3/opencode-modelrouter) — Intelligent LLM cost router for OpenCode
-- [opencode-sessionrecall](https://github.com/oke3/opencode-sessionrecall) — AI code archaeology for OpenCode sessions
-- [opencode-learn](https://github.com/oke3/opencode-learn) — Skill-building curriculum for OpenCode agents
-- [opencode-terminalforge](https://github.com/oke3/opencode-terminalforge) — Terminal workspace for OpenCode projects
-- [opencode-authmesh](https://github.com/oke3/opencode-authmesh) — Unified credential mesh for OpenCode providers
+- [gz-sessions](https://github.com/oke3/gz-sessions) — Persistent cross-session memory for OpenCode agents
+- [gz-codemap](https://github.com/oke3/gz-codemap) — Codebase mapping for OpenCode
+- [gz-bench](https://github.com/oke3/gz-bench) — Benchmarking suite for OpenCode
+- [gz-remote](https://github.com/oke3/gz-remote) — Drive OpenCode over SSH
+- [gz-modelrouter](https://github.com/oke3/gz-modelrouter) — Intelligent LLM cost router for OpenCode
+- [gz-sessionrecall](https://github.com/oke3/gz-sessionrecall) — AI code archaeology for OpenCode sessions
+- [gz-learn](https://github.com/oke3/gz-learn) — Skill-building curriculum for OpenCode agents
+- [gz-terminalforge](https://github.com/oke3/gz-terminalforge) — Terminal workspace for OpenCode projects
+- [gz-authmesh](https://github.com/oke3/gz-authmesh) — Unified credential mesh for OpenCode providers
 
 ## License
 

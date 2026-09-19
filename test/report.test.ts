@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ground Zero LLC. All rights reserved.
+
 import { describe, it, expect } from 'bun:test'
 import { fmtCost, fmtTokens, fmtDate, table } from '../src/report.js'
 

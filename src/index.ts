@@ -1,9 +1,11 @@
+// Copyright (c) 2026 Ground Zero LLC. All rights reserved.
+
 /**
- * @oke3/opencode-codeforge — analytics for OpenCode usage.
+ * @ground-zero-llc/gz-codeforge — analytics for OpenCode usage.
  *
  * @example
  * ```typescript
- * import { Analytics } from '@oke3/opencode-codeforge'
+ * import { Analytics } from '@ground-zero-llc/gz-codeforge'
  *
  * const analytics = new Analytics('~/.local/share/opencode/opencode.db')
  * const overview = analytics.overview()

@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ground Zero LLC. All rights reserved.
+
 /**
  * Analytics engine — reads OpenCode's SQLite database (read-only)
  * and computes usage, cost, and token statistics.

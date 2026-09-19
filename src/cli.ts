@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Ground Zero LLC. All rights reserved.
+
 /**
  * codeforge CLI — analytics for OpenCode usage.
  */

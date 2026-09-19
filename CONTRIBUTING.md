@@ -1,4 +1,4 @@
-# Contributing to opencode-codeforge
+# Contributing to gz-codeforge
 
 Thanks for your interest in contributing!
 
