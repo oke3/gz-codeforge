@@ -1,23 +1,23 @@
 # gz-codeforge
 
-> Built by [Ground Zero LLC](https://github.com/oke3) — AI infrastructure for the agentic age.
-
 Analytics for OpenCode usage — costs, models, agents, projects, and daily trends.
 
-[![CI](https://github.com/oke3/gz-codeforge/actions/workflows/ci.yml/badge.svg)](https://github.com/oke3/gz-codeforge/actions)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Ground Zero LLC](https://img.shields.io/badge/Built%20by-Ground%20Zero%20LLC-purple)](https://github.com/oke3)
 [![npm](https://img.shields.io/npm/v/@ground-zero-llc/gz-codeforge)](https://www.npmjs.com/package/@ground-zero-llc/gz-codeforge)
-[![license](https://img.shields.io/npm/l/@ground-zero-llc/gz-codeforge)](https://github.com/oke3/gz-codeforge/blob/main/LICENSE)
+[![CI](https://github.com/oke3/gz-codeforge/actions/workflows/ci.yml/badge.svg)](https://github.com/oke3/gz-codeforge/actions)
 
 ## Why
 
-OpenCode tracks every session — model, agent, project, cost, tokens, timestamps — in a local SQLite database. **codeforge** turns that data into answers:
+OpenCode tracks every session — model, agent, project, cost, tokens, timestamps — in a local SQLite database. That data answers the questions that matter when you're running AI coding agents at scale:
 
-- **"What am I spending?"** — total cost, tokens, and session counts
-- **"Which models cost the most?"** — per-model breakdown with variant awareness
-- **"Who's doing the work?"** — per-agent and per-project breakdowns
-- **"Is usage growing?"** — daily session and cost trends
+- **"What am I spending?"** — total cost, tokens, and session counts across all time
+- **"Which models cost the most?"** — per-model breakdown with variant awareness (`@max`, `@low`)
+- **"Who's doing the work?"** — per-agent and per-project cost attribution
+- **"Is usage growing?"** — daily session and cost trends over configurable windows
+- **"What were the most expensive sessions?"** — top sessions by cost for budget audits
 
-Read-only, local-first, zero dependencies.
+**codeforge** turns raw database rows into actionable answers. Read-only, local-first, zero dependencies. No cloud, no accounts, no telemetry.
 
 ## Install
 
@@ -39,46 +39,210 @@ codeforge models
 # → opencode-go/deepseek-v4-flash       49  $9.9659  33.2M
 # → opencode-go/deepseek-v4-flash@low    6  $1.1367  1.7M
 
+# Per-agent breakdown
+codeforge agents
+# → content-creator     142  $8.2341
+# → web-dev-ops          89  $4.5672
+
 # Daily trend
 codeforge daily --days 7
 
 # Most expensive sessions
 codeforge top --limit 5
 
-# Everything at once
+# Full report (everything at once)
 codeforge report
+
+# Machine-readable output
+codeforge overview --json
 ```
+
+## Architecture
+
+```
+┌──────────────────────────────────────────────────┐
+│                   OpenCode Database                │
+│            (SQLite — session, message, part)       │
+│                    READ-ONLY ────┐                 │
+└──────────────────────────────────┼─────────────────┘
+                                   │
+                          ┌────────▼────────┐
+                          │    codeforge     │
+                          │    CLI / API     │
+                          └────────┬─────────┘
+                                   │
+                    ┌──────────────┼──────────────┐
+                    ▼              ▼              ▼
+             ┌────────────┐ ┌───────────┐ ┌────────────┐
+             │  Analytics  │ │  report() │ │   table()  │
+             │  (analytics │ │ formatter │ │ alignment  │
+             │  .ts)       │ │ cost,     │ │ engine     │
+             │ read-only   │ │ tokens,   │ │            │
+             │ queries     │ │ dates     │ └────────────┘
+             └─────────────┘ └───────────┘
+```
+
+**Pipeline:**
+1. `Analytics` opens the SQLite database in read-only mode
+2. SQL queries aggregate by model, agent, project, and day
+3. `formatModel()` normalizes the model field (JSON or plain string) into `provider/id@variant`
+4. `report.ts` formats numbers (`$9.9659`, `33.2M`, `2026-08-15`) and renders aligned text tables
+5. All output is local — no data leaves your machine
+
+## Metrics Tracked
+
+| Metric | Description |
+|--------|-------------|
+| **Sessions** | Total number of OpenCode sessions |
+| **Cost** | Sum of `cost` field across sessions (in USD) |
+| **Tokens Input** | Total input tokens consumed |
+| **Tokens Output** | Total output tokens produced |
+| **First Session** | Timestamp of the earliest session |
+| **Last Session** | Timestamp of the most recent session |
+| **Model** | `provider/id@variant` — normalized from JSON or string |
+| **Agent** | Agent name (e.g. `content-creator`, `web-dev-ops`) |
+| **Project** | Project ID (directory-based identifier) |
+
+## Model Normalization
+
+OpenCode stores the model field differently across database versions:
+
+- **Newer DBs**: JSON like `{"id":"deepseek-v4-flash","providerID":"opencode-go","variant":"max"}`
+- **Older DBs**: Plain string like `"opencode/deepseek-v4-flash"`
+
+codeforge normalizes both into `provider/id` format and appends `@variant` when present. This means `deepseek-v4-flash` and `deepseek-v4-flash@low` appear as separate rows in the model breakdown — because they have different cost profiles.
 
 ## CLI Reference
 
 | Command | Description |
 |---------|-------------|
 | `overview` | Headline usage and cost stats |
-| `models` | Per-model breakdown (cost desc) |
-| `agents` | Per-agent breakdown |
-| `projects` | Per-project breakdown |
-| `daily [--days N]` | Daily sessions and cost (default 30) |
-| `top [--limit N]` | Most expensive sessions (default 10) |
-| `report` | Full report (all of the above) |
-| `health` | Check database status |
+| `models` | Per-model breakdown (sorted by cost, descending) |
+| `agents` | Per-agent breakdown (sorted by cost, descending) |
+| `projects` | Per-project breakdown (sorted by cost, descending) |
+| `daily [--days N]` | Daily sessions and cost (default: 30 days) |
+| `top [--limit N]` | Most expensive sessions (default: 10) |
+| `report` | Full report — all of the above in one view |
+| `health` | Check database status and path |
 
-All commands accept `--json` for machine-readable output.
+All commands accept `--json` for machine-readable output (JSON to stdout).
 
-## Model Normalization
+### Output Examples
 
-OpenCode stores the model field as JSON in newer databases (`{"id":"deepseek-v4-flash","providerID":"opencode-go","variant":"max"}`) and as a plain string in older ones. codeforge normalizes both into `provider/id` and appends `@variant` when present, so the breakdown distinguishes model variants that would otherwise collapse into one row.
+**overview:**
+
+    OpenCode Usage Overview
+    ───────────────────────
+    Sessions:         317
+    Total cost:       $15.0913
+    Tokens input:     98.3M
+    Tokens output:    12.9M
+    First session:    2026-06-15
+    Last session:     2026-09-19
+
+**models:**
+
+    Model                          Sessions  Cost      Tokens
+    ---------------------------------------------------------
+    opencode-go/deepseek-v4-flash  49        $9.9659   33.2M
+    opencode-go/deepseek-v4-flash@low  6     $1.1367   1.7M
+    opencode/x-preview-f-free      112       $2.8412   41.8M
+
+**daily:**
+
+    Day        Sessions  Cost
+    -------------------------
+    2026-09-13  12       $0.8234
+    2026-09-14  8        $0.5123
+    2026-09-15  15       $1.2341
+
+**top:**
+
+    Date        Cost      Tokens   Title
+    ------------------------------------------------------------
+    2026-09-15  $2.3412   8.2M    Refactor auth module with RBAC
+    2026-09-14  $1.8765   5.1M    Build landing page with animations
 
 ## Library API
 
 ```typescript
-import { Analytics } from '@ground-zero-llc/gz-codeforge'
+import { Analytics, defaultDbPath } from '@ground-zero-llc/gz-codeforge'
 
-const analytics = new Analytics('~/.local/share/opencode/opencode.db')
+// Create analytics instance (defaults to OpenCode's DB path)
+const analytics = new Analytics(defaultDbPath())
+// or: new Analytics('~/.local/share/opencode/opencode.db')
+
+// Overview
 const overview = analytics.overview()
+// → { sessions: 317, totalCost: 15.09, totalTokensInput: 98.3M, ... }
+
+// Per-model breakdown
 const models = analytics.byModel()
+// → [{ model: 'opencode-go/deepseek-v4-flash', sessions: 49, cost: 9.97, tokens: 33.2M }, ...]
+
+// Per-agent breakdown
+const agents = analytics.byAgent()
+// → [{ agent: 'content-creator', sessions: 142, cost: 8.23 }, ...]
+
+// Per-project breakdown
+const projects = analytics.byProject()
+// → [{ projectId: 'my-app', sessions: 42, cost: 1.23 }, ...]
+
+// Daily trends
 const daily = analytics.daily(30)
+// → [{ day: '2026-09-15', sessions: 15, cost: 1.23 }, ...]
+
+// Top sessions
 const top = analytics.topSessions(5)
+// → [{ id: 'ses_...', title: 'Refactor auth', cost: 2.34, tokens: 8.2M, timeCreated: ... }, ...]
+
 analytics.close()
+```
+
+### Types
+
+```typescript
+interface Overview {
+  sessions: number
+  totalCost: number
+  totalTokensInput: number
+  totalTokensOutput: number
+  firstSession: number
+  lastSession: number
+}
+
+interface ModelStat {
+  model: string
+  sessions: number
+  cost: number
+  tokens: number
+}
+
+interface AgentStat {
+  agent: string
+  sessions: number
+  cost: number
+}
+
+interface ProjectStat {
+  projectId: string
+  sessions: number
+  cost: number
+}
+
+interface DailyStat {
+  day: string
+  sessions: number
+  cost: number
+}
+
+interface TopSession {
+  id: string
+  title: string
+  cost: number
+  tokens: number
+  timeCreated: number
+}
 ```
 
 ## Configuration
@@ -89,18 +253,32 @@ analytics.close()
 
 The database is opened **read-only** — codeforge never writes to it.
 
+## Privacy
+
+**codeforge is local-first and privacy-by-design:**
+
+- **Read-only** — The OpenCode database is never written to.
+- **Local output** — All results are printed to your terminal or returned as objects. No data leaves your machine.
+- **Zero telemetry** — No analytics, no phone-home, no tracking.
+- **No cloud dependency** — Everything runs offline. No API keys required.
+
 ## Related Projects
 
-- [gz-sessions](https://github.com/oke3/gz-sessions) — Persistent cross-session memory for OpenCode agents
-- [gz-codemap](https://github.com/oke3/gz-codemap) — Codebase mapping for OpenCode
-- [gz-bench](https://github.com/oke3/gz-bench) — Benchmarking suite for OpenCode
-- [gz-remote](https://github.com/oke3/gz-remote) — Drive OpenCode over SSH
-- [gz-modelrouter](https://github.com/oke3/gz-modelrouter) — Intelligent LLM cost router for OpenCode
-- [gz-sessionrecall](https://github.com/oke3/gz-sessionrecall) — AI code archaeology for OpenCode sessions
-- [gz-learn](https://github.com/oke3/gz-learn) — Skill-building curriculum for OpenCode agents
-- [gz-terminalforge](https://github.com/oke3/gz-terminalforge) — Terminal workspace for OpenCode projects
-- [gz-authmesh](https://github.com/oke3/gz-authmesh) — Unified credential mesh for OpenCode providers
+| Project | What It Does |
+|---------|-------------|
+| [gz-sessions](https://github.com/oke3/gz-sessions) | Persistent cross-session memory for AI agents |
+| [gz-sessionrecall](https://github.com/oke3/gz-sessionrecall) | AI code archaeology — search your session history |
+| [gz-codemap](https://github.com/oke3/gz-codemap) | Scan codebases → auto-generate project config |
+| [gz-modelrouter](https://github.com/oke3/gz-modelrouter) | Intelligent LLM cost router — save 40-70% on bills |
+| [gz-bench](https://github.com/oke3/gz-bench) | Standardized benchmark harness for AI coding agents |
+| [gz-authmesh](https://github.com/oke3/gz-authmesh) | Unified credential mesh for AI providers |
+| [gz-remote](https://github.com/oke3/gz-remote) | Drive AI coding agents on remote machines over SSH |
+| [gz-context-engine](https://github.com/oke3/gz-context-engine) | Production-grade RAG context engine |
 
 ## License
 
-MIT © oke3
+MIT — Ground Zero LLC
+
+---
+
+Built by [Ground Zero LLC](https://github.com/oke3) — AI infrastructure for the agentic age.
