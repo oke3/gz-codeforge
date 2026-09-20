@@ -1,6 +1,6 @@
 # gz-codeforge
 
-Analytics for OpenCode usage — costs, models, agents, projects, and daily trends.
+> Analytics for OpenCode usage — costs, models, agents, projects, and daily trends.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Ground Zero LLC](https://img.shields.io/badge/Built%20by-Ground%20Zero%20LLC-purple)](https://github.com/oke3)
